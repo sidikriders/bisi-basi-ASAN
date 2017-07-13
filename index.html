@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <script src="https://unpkg.com/vue"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g=" crossorigin="anonymous"></script>
+<div id="app">
+  <div class="container">
+    <h2>Basic Progress Bar</h2>
+    <div class="progress">
+      <div class="progress-bar" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" :style="progress">
+        <span class="sr-only">70% Complete</span>
+      </div>
+    </div>
+  </div>
+  <div :style="progressMerah">
+
+  </div>
+</div>
+<script>
+  let app = new Vue({
+    el: "#app",
+    data: {
+      progress: ``,
+      persen: 50,
+      progressMerah: ``,
+      leftnya: 48
+    },
+    computed: {
+      progressnya () {
+        this.progress = `width: ${this.persen}%`
+        this.progressMerah = `background: red; height: 50px; width: 50px; position: relative; left: ${this.leftnya}%`
+        return
+      }
+    },
+    methods: {
+      tambahin () {
+        console.log("tambah");
+        if (this.persen < 100) {
+          this.persen += 10
+          this.leftnya += 8
+        } else {
+          alert("tim kanan menang!!")
+        }
+        this.progressnya
+      },
+      kurangin () {
+        if (this.persen > 0) {
+          this.persen -= 10
+          this.leftnya -= 8
+        } else {
+          alert("tim kiri menang!!")
+        }
+        this.progressnya
+      }
+    },
+    mounted: function() {
+      this.progressnya
+    }
+  })
+
+  $(document).keydown(function(e) {
+    if (e.which == 37) {
+      app.kurangin()
+       return false;
+    }
+
+    if (e.which == 39) {
+      app.tambahin()
+       return false;
+    }
+});
+</script>
+</body>
+</html>
