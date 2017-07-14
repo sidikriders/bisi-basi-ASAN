@@ -1,82 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Bootstrap Example</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-</head>
-<body>
-  <script src="https://unpkg.com/vue"></script>
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g=" crossorigin="anonymous"></script>
-<div id="app">
-  <div class="container">
-    <h2>Basic Progress Bar</h2>
-    <div class="progress">
-      <div class="progress-bar" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" :style="progress">
-        <span class="sr-only">70% Complete</span>
-      </div>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Juego de la soga - Dev</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.3/css/bulma.css">
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g=" crossorigin="anonymous"></script> -->
+    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vuefire/dist/vuefire.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <home-page v-if="isLogin"
+      :curr="curr"
+      :online-user="onlineUser"
+      :msg="msg"
+      @logout="removeOnlineUser()"
+      @join-room="joinRoom"></home-page>
+      <start-page v-else :curr="curr"
+      :online-user="onlineUser" @login-go="loginGo()"></start-page>
     </div>
-  </div>
-  <div :style="progressMerah">
-
-  </div>
-</div>
-<script>
-  let app = new Vue({
-    el: "#app",
-    data: {
-      progress: ``,
-      persen: 50,
-      progressMerah: ``,
-      leftnya: 48
-    },
-    computed: {
-      progressnya () {
-        this.progress = `width: ${this.persen}%`
-        this.progressMerah = `background: red; height: 50px; width: 50px; position: relative; left: ${this.leftnya}%`
-        return
-      }
-    },
-    methods: {
-      tambahin () {
-        console.log("tambah");
-        if (this.persen < 100) {
-          this.persen += 10
-          this.leftnya += 8
-        } else {
-          alert("tim kanan menang!!")
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyCUHvjhSMX2NeDTKbny453Wcj2-bzW2C44",
+        authDomain: "tartam-dev.firebaseapp.com",
+        databaseURL: "https://tartam-dev.firebaseio.com",
+        projectId: "tartam-dev",
+        storageBucket: "",
+        messagingSenderId: "1026006366586"
+      };
+      var firebaseApp = firebase.initializeApp(config);
+      var db = firebaseApp.database()
+      Vue.use(VueFire)
+    Vue.component("start-page", {
+      props: ["curr", "onlineUser"],
+      template:`
+      <div :class="classModalLogin">
+        <div class="modal-background"></div>
+        <div class="modal-content" style="width: 25%">
+          <div class="box" style="text-align: center; padding-bottom: 30px;">
+            <h3 class="title is-4">Insert your username</h3>
+            <h3 class="title is-6" style="color: red">{{msg}}</h3>
+            <div class="field">
+              <input class="input" type="text" placeholder="username" v-model="curr.user" @keyup.enter="daftarKuy"/>
+            </div>
+          </div>
+          <button class="button is-primary" style="width:50%; margin-left: 25%" @click="daftarKuy">Play Now</button>
+        </div>
+      </div>`,
+      data: function() {
+        return {
+          msg: "",
+          classModalLogin: "modal is-active"
         }
-        this.progressnya
       },
-      kurangin () {
-        if (this.persen > 0) {
-          this.persen -= 10
-          this.leftnya -= 8
-        } else {
-          alert("tim kiri menang!!")
+      methods: {
+        daftarKuy () {
+          let penentu = this.onlineUser.filter(e => {return e["user"] == this.curr.user})
+          if (this.curr.user == "") {
+            this.msg = "please insert username before playing"
+          } else if (penentu.length > 0) {
+            this.msg = "username already exist"
+          } else {
+            db.ref('onlineUser').push(this.curr)
+            this.$emit("login-go")
+          }
         }
-        this.progressnya
       }
-    },
-    mounted: function() {
-      this.progressnya
-    }
-  })
+    })
 
-  $(document).keydown(function(e) {
-    if (e.which == 37) {
-      app.kurangin()
-       return false;
-    }
+    Vue.component('on-game', {
+      props: [],
+      template: `
+      `,
+      methods: {
+        tambahin () {
 
-    if (e.which == 39) {
-      app.tambahin()
-       return false;
-    }
-});
-</script>
-</body>
+        }
+      },
+      mounted: function() {
+        $(document).keydown(function(e) {
+          if (e.which == 37) {
+            app.kurangin()
+             return false;
+          }
+
+          if (e.which == 39) {
+            app.tambahin()
+             return false;
+          }
+        })
+      }
+    })
+
+    Vue.component("home-page", {
+      props: ["curr", "onlineUser", "msg"],
+      template: `
+      <div>
+      <h1 class="title">Hai, {{ curr.user }}</h1>
+      <h3 class="subtitle" v-for="user in onlineUser">{{user["user"]}} dan {{user["score"]}}</h3>
+      <br />
+      <h5 class="title is-5">{{ msg }}</h5>
+      <br />
+      <button class="button" @click="logout">Logout</button>
+      <button class="button is-primary" @click="joinRoom">Play Now</button>
+      </div>`,
+      methods: {
+        logout () {
+          this.$emit("logout")
+        },
+        joinRoom () {
+          this.$emit("join-room")
+        }
+      }
+    })
+    var app = new Vue({
+      el: '#app',
+      firebase: function() {
+        return {
+          onlineUser: db.ref('/onlineUser'),
+          room: db.ref('/room')
+        }
+      },
+      data: {
+        curr: {
+          user: "",
+          score: 0
+        },
+        isLogin: false,
+        msg: "",
+        player: ""
+      },
+      computed: {
+        isPlaying: function() {
+          if (this.room.length == 3) {
+            return true
+          } else {
+            return false
+          }
+        }
+      },
+      methods: {
+        loginGo () {
+          localStorage.setItem("currUser", this.curr.user)
+          this.isLogin = true
+          this.onlineUser.forEach(x=> {
+            if (x.user == this.curr.user) {
+              localStorage.setItem('key', x['.key'])
+            }
+          })
+        },
+        updateOnlineUser (key, val) {
+          let objTemp = {
+            name: key,
+            score: val
+          }
+          this.onlineUser.push(objTemp)
+        },
+        removeOnlineUser () {
+          console.log("masuk");
+          for (let i = 0; i < this.onlineUser.length; i++) {
+            if (this.onlineUser[i].user == this.curr.user) {
+              // this.onlineUser.splice(i,1)
+              db.ref('onlineUser/'+this.onlineUser[i][".key"]).remove()
+              this.curr.user = ""
+              this.curr.score = 0
+              this.isLogin = false
+              localStorage.clear()
+            }
+          }
+        },
+        joinRoom () {
+          if (this.room.length < 2) {
+            db.ref('/room').push(this.curr)
+            this.player = "player 1"
+            this.msg = "menunggu lawan mu"
+          } else if (this.room.length < 3) {
+            db.ref('/room').push(this.curr)
+            this.player = "player 2"
+          } else {
+            alert("room lg di pake")
+          }
+        },
+        checkLogin() {
+          if (localStorage.currUser != undefined) {
+            this.curr.user = localStorage.currUser
+            this.isLogin = true
+          }
+        }
+      },
+      mounted: function() {
+        this.checkLogin()
+      }
+    })
+    </script>
+  </body>
 </html>

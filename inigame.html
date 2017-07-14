@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Tartam</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vuefire/dist/vuefire.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <span style="">Player 1 = {{playerSatu['user']}}</span>
+      <span style="margin-left: 50%;">Player 2 = {{playerDua['user']}}</span>
+      <div class="container">
+        <h2>Basic Progress Bar</h2>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" :aria-valuenow="progressive" aria-valuemin="0" aria-valuemax="100" :style="progressive">
+            <span class="sr-only">70% Complete</span>
+          </div>
+        </div>
+      </div>
+      <div :style="progressMerah">
+
+      </div>
+    </div>
+    <script>
+    var config = {
+      apiKey: "AIzaSyCUHvjhSMX2NeDTKbny453Wcj2-bzW2C44",
+      authDomain: "tartam-dev.firebaseapp.com",
+      databaseURL: "https://tartam-dev.firebaseio.com",
+      projectId: "tartam-dev",
+      storageBucket: "",
+      messagingSenderId: "1026006366586"
+    };
+    var firebaseApp = firebase.initializeApp(config);
+    var db = firebaseApp.database()
+    Vue.use(VueFire)
+    var app = new Vue({
+      el: "#app",
+      data: {
+        progressive: "",
+        progressMerah: ``,
+        leftnya: 48
+      },
+      firebase: function() {
+        return {
+          room: db.ref('/room'),
+          onlineUser: db.ref('onlineUser/')
+        }
+      },
+      computed: {
+        playerSatu: function() {
+          return this.room[0]
+        },
+        playerDua: function() {
+          return this.room[1]
+        },
+        progress: function() {
+          return this.room[2]
+        },
+        progressnya () {
+          db.ref('/room/progress/nilai').set(this.progress.nilai)
+          this.progressive = `width: ${this.progress.nilai}%`
+          this.progressMerah = `background: red; height: 50px; width: 50px; position: relative; left: ${this.leftnya}%`
+          return
+        }
+      },
+      methods: {
+        tambahin () {
+          console.log("tambah");
+          if (this.progress.nilai < 100) {
+            this.progress.nilai += 10
+            this.leftnya += 8
+          } else {
+            if (this.playerSatu.user == localStorage.currUser) {
+              let nilaiBaru = this.playerDua.score += 10
+              db.ref('onlineUser/'+localStorage.getItem('key')+'/score').set(nilaiBaru)
+              db.ref('room/'+this.playerSatu['.key']).remove()
+              db.ref('room/'+this.playerDua['.key']).remove()
+              db.ref('room/progress').set({
+                nilai: 50
+              })
+              alert(`${this.playerSatu.user} menang!!`)
+              window.location.href = '/'
+            } else {
+              let nilaiBaru = this.playerDua.score += 10
+              db.ref('onlineUser/'+localStorage.getItem('key')+'/score').set(nilaiBaru)
+              db.ref('room/progress').set({
+                nilai: 50
+              })
+              alert(`${this.playerDua.user} menang!!`)
+              window.location.href = '/'
+            }
+          }
+          this.progressnya
+        },
+        kurangin () {
+          if (this.progress.nilai > 0) {
+            this.progress.nilai -= 10
+            this.leftnya -= 8
+          } else {
+            let nilaiBaru = this.playerDua.score += 10
+            console.log(this.playerSatu);
+            db.ref('onlineUser/'+this.playerSatu['.key']+'/score').set(nilaiBaru)
+            db.ref('room/'+this.playerSatu['.key']).remove()
+            alert(`${this.playerSatu.user} menang!!`)
+            window.location.href = '/'
+          }
+          this.progressnya
+        }
+      },
+      created: function() {
+        this.progressnya
+      }
+    })
+    $(document).keydown(function(e) {
+      if (e.which == 37) {
+        app.kurangin()
+         return false;
+      } else if (e.which == 39) {
+        app.tambahin()
+         return false;
+      }
+    })
+    </script>
+  </body>
+</html>
